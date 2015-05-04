@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Resultat</title>
+	<meta charset="utf-8" />
+
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+</head>
+<body>
+
+	<input id="adresse" type=text name="adresse" value="Avenue Gaston Boissier">
+	<button onclick="myFind()">OK</button> 
+	<div id="map" style="width: 1280px; height: 610px"></div>
+
+
+	<script src="sample-geojson.js" type="text/javascript"></script>
+	
+ 	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script>
+	//Adresse http://leafletjs.com/examples/quick-start.html
+
+		var map = L.map('map').setView([48.8534100, 2.3488000], 10);
+
+		L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+			id: 'examples.map-20v6611k'
+		}).addTo(map);
+
+		var baseballIcon = L.icon({
+			iconUrl: 'baseball-marker.png',
+			iconSize: [32, 37],
+			iconAnchor: [16, 37],
+			popupAnchor: [0, -28]
+		});
+
+
+
+		var myLines = [{}];
+
+		var myStyle = {
+		    "color": "#0000FF",
+		    "weight": 3,
+		    "opacity": 0.85
+		};
+
+		var linesFeatureLayer = L.geoJson(myLines, {
+    	style: myStyle
+		}).addTo(map);
+		
+
+	</script>
+
+	 <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://localhost:8080');
+            function myFind() 
+            {
+    			socket.emit('message', document.getElementById('adresse').value);
+    			
+			}
+			
+			socket.on('message', function(message) 
+			{
+                alert('Le serveur a un message pour vous : ' + JSON.stringify(message));
+
+                //Clear map
+                map.removeLayer( linesFeatureLayer );
+
+                
+    			linesFeatureLayer = L.geoJson(message, {
+    			style: myStyle
+				}).addTo(map);
+
+			});
+			
+        </script> 
+</body>
+</html>
