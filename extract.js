@@ -14,7 +14,7 @@ var typeOfRoads = ["motorway", "trunk", "primary", "secondary", "tertiary", "unc
 var hashes = require('hashes');
 var hashTableOfNodes = new hashes.HashTable();			//Hashtable qui va contenire les nodes des ways afin de retrouver les nodes d'intersections.
 var hashTableOfWays = new hashes.HashTable();			//Hashtable qui va contenire les Ways.
-var hashTableOfRelation = new hashes.HashTable();		//Hashtable qui va contenire les Relations.
+var hashTableOfRelations = new hashes.HashTable();		//Hashtable qui va contenire les Relations.
 
 
 
@@ -27,9 +27,10 @@ db.serialize();
 db.spatialite();
 //db.run("PRAGMA synchronous = OFF;"); // otherwise it is very slow
 
+var nbrwaysInRelations = 0;
 
 
-/* Traitement des Ways
+//* Traitement des Ways
 handler.on('way', function(way) 
 	{
 
@@ -91,14 +92,13 @@ handler.on('relation', function(relation)
 	{
 		var tmpWay = [];
 		var members = relation.members();
-		console.log(" # members "+relation.members_count);
-
-		console.log(relation.tags());
+		
 		for(var i = 0; i < relation.members_count; i++) 
 		{
 			if(relation.members(i).type == "w")
 			{
 				tmpWay.push(relation.members(i).ref);
+
 			}
 		}
 
@@ -108,6 +108,8 @@ handler.on('relation', function(relation)
 
 		
 });
+
+
 
 
 /*
@@ -169,7 +171,12 @@ for (var i = 0; i < tmpArray.length; i++)
 //console.log(hashTableOfWays.count());
 
  //db.close();
- //console.log("fin");
+
+ getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations);
+console.log("Nombre de ways dans les relations "+nbrwaysInRelations);
+console.log("Nombre de relation "+hashTableOfRelations.count());
+console.log("Nombre de ways "+hashTableOfWays.count());
+console.log("fin");
 
 
 //Function qui va ajouter les nodes d'intersection a la structure des Ways.
@@ -266,4 +273,133 @@ function saveIntersectionPoints(hashWays)
 }
 */
 
+//Renvoie une liste des 
+function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
+{
 
+	//La table qui contiendra les resultats finaux.
+	tabGeoJson = [];
+
+
+	//traitement des relations
+	var arrayOfWays = [];
+	var relations = hashTableOfRelations.getKeyValuePairs();
+
+	for (var i = 0; i < relations.length; i++) {
+
+		arrayOfWays = [];
+
+		ids_osm_way = relations[i].value;
+
+		if(ids_osm_way.length != 0)
+		{
+
+			
+			for(var j = 0; j < ids_osm_way.length; j++)
+			{
+				if(hashTableOfWays.contains(ids_osm_way[j]))
+				{
+					nbrwaysInRelations++;
+					arrayOfWays.push(hashTableOfWays.get(ids_osm_way[j]).value.coordinates);
+					//Supprimer de la table des ways qui on déja étés inserer
+					hashTableOfWays.remove(ids_osm_way[j]);
+				}
+
+			}
+		}
+		
+		var geo = geojsonMultiline(arrayOfWays);
+	
+
+		tabGeoJson.push({name : relations[i].name, geoJson : geo});
+
+	};
+
+	delete relations;
+
+	//Traitement des way avec un name a null
+
+	var ways = hashTableOfWays.getKeyValuePairs();
+
+	for (var i = 0; i < ways.length; i++) {
+		var way = ways[i].value
+
+		if(way.name == null)
+		{
+			//console.log(way);
+			//console.log(JSON.stringify(geojsonMultiline([way.coordinates])));
+
+			tabGeoJson.push({name : null , geoJson : geojsonMultiline([way.coordinates])});
+			
+			//Supprimer de la table des ways qui on déja étés inserer
+			hashTableOfWays.remove(way.id_osm);
+
+		}
+	};
+
+	//Traitement du rest des ways
+	var ways = hashTableOfWays.getKeyValuePairs();
+	var tabTmp = new hashes.HashTable();
+
+	for (var i = 0; i < ways.length; i++) 
+	{
+		if(!tabTmp.contains(ways[i].value.name))
+		{
+			//transformer en multiLine
+			var value = ways[i].value.coordinates = [ways[i].value.coordinates];
+			tabTmp.add(ways[i].value.name, ways[i].value);
+
+		}
+		else
+		{
+			
+			var oldWay = tabTmp.get(ways[i].value.name);
+
+			var newWay = oldWay;
+
+			var newCoordinates = oldWay.value.coordinates;
+			newCoordinates.push(ways[i].value.coordinates)
+
+			newWay.value.coordinates = newCoordinates; //<---
+			newWay.value.isMultiline = true;
+
+			
+			tabTmp.add(newWay.key, newWay.value);
+
+
+		}
+	}
+
+
+	var ways = tabTmp.getKeyValuePairs();
+	for (var i = 0; i < ways.length; i++) 
+	{
+		console.log(ways[i].value);
+		if(ways[i].value.isMultiline != "undefined")
+		{
+			tabGeoJson.push({name : ways[i].key , geoJson : geojsonMultiline([ways[i].value.coordinates])});
+			//console.log(JSON.stringify(geojsonMultiline([ways[i].value.coordinates])));
+
+		}
+		else
+		{
+			tabGeoJson.push({name : ways[i].key , geoJson : geojsonMultiline(ways[i].value.coordinates)});
+			//console.log({name : ways[i].key , geoJson : geojsonMultiline(ways[i].value.coordinates)});
+		}
+
+	}
+	
+	return tabGeoJson;
+	
+}
+
+
+
+function geojsonMultiline(arrayOfLines)
+{
+
+	var multiLine = JSON.parse('{ "type": "MultiLineString","coordinates": []}');
+	multiLine.coordinates = arrayOfLines;
+	return multiLine;
+
+}
