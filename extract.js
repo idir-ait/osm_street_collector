@@ -96,16 +96,16 @@ handler.on('relation', function(relation)
 		console.log(relation.tags());
 		for(var i = 0; i < relation.members_count; i++) 
 		{
-			var member = relation.members(i);
-			console.log(member);
+			if(relation.members(i).type == "w")
+			{
+				tmpWay.push(relation.members(i).ref);
+			}
 		}
 
-
-		//console.log(relation.tags());
-
-		//roadsIDF.push(relation);		
+		hashTableOfRelations.add(relation.id, tmpWay);
 			
 	}
+
 		
 });
 
