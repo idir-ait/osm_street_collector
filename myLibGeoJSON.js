@@ -48,7 +48,7 @@ while(tab.length > 1)
 
 	var dist = distance2points(pairepoints[0],pairepoints[1]);
 	//Dist > 0,01  < 0.1
-	if(dist > 0.01 && dist < 0.3)
+	if(dist > 0.01 && dist < 1)
 	{
 		//Point du début
 		

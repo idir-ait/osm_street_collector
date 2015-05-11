@@ -39,7 +39,8 @@ io.sockets.on('connection', function (socket) {
         {
             index: 'tmpdb',
             type: 'roads',
-            body: 	{
+            size : 1000000,
+            body: {
 					query : {
 					    filtered : {
 					        filter : {
@@ -69,7 +70,7 @@ io.sockets.on('connection', function (socket) {
 
                 	//console.log(JSON.stringify(multiLine));
 
-                	multiLine = geo.mergeSegments(multiLine);
+                	//multiLine = geo.mergeSegments(multiLine);
                 	
                 	socket.emit('message', multiLine);
               	}

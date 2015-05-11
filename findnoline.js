@@ -131,3 +131,4 @@ function distpoint(p1 , p2)
 	return gju.pointDistance(	{type: 'Point', coordinates:[p[1], p[2]]},
                   				{type: 'Point', coordinates:[p[1], p[2]]});
 }
+

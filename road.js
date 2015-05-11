@@ -7,14 +7,17 @@ if (process.argv.length != 4) {
 console.log("Usage: " + process.argv[0] + ' ' + process.argv[1] + " OSMFILE DBFILE");
 process.exit(1);
 }
+
 var input_file = process.argv[2];
 var output_file = process.argv[3];
 var converter = new osmium.Converter({ output: output_file, show_layers: true });
 // ---- layers ----
 converter.create_layer('turning_circles').
 with_attribute('osm_id', 'string');
+
 converter.create_layer('traffic_signals').
 with_attribute('osm_id', 'string');
+
 converter.create_layer('major_roads', 'linestring').
 with_attribute('osm_id', 'integer').
 with_attribute('type', 'string').
@@ -22,6 +25,7 @@ with_attribute('name', 'string').
 with_attribute('ref', 'string').
 with_attribute('oneway', 'integer').
 with_attribute('maxspeed', 'integer');
+
 converter.create_layer('minor_roads', 'linestring').
 with_attribute('osm_id', 'integer').
 with_attribute('type', 'string').
@@ -29,9 +33,11 @@ with_attribute('name', 'string').
 with_attribute('ref', 'string').
 with_attribute('oneway', 'integer').
 with_attribute('maxspeed', 'integer');
+
 converter.create_layer('plazas', 'multipolygon').
 with_attribute('osm_id', 'integer').
 with_attribute('name', 'string');
+
 // ---- rules ----
 converter.add_nodes().
 matching('highway', 'traffic_signals').
