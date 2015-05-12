@@ -1,0 +1,7 @@
+PostGis
+
+CREATE TABLE app ( p_id INTEGER PRIMARY KEY);
+
+SELECT AddGeometryColumn('app','the_geom','4326','POINT',2);
+
+INSERT INTO app(p_id, the_geom) VALUES(1, ST_GeomFromText('POINT(2.3488 48.85341)', 4326));

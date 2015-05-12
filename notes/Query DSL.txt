@@ -1,0 +1,54 @@
+
+//Utilisation du plugin "sens" sur google chrome
+//Construction d'un mapping
+
+PUT /tmpdb
+{
+    "mappings": {
+        "roads": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "location":{
+                    "type": "geo_shape",
+                    "tree": "quadtree",
+                    "precision": "1m"
+                }
+            }
+        }
+    }
+}
+
+//Affichage de la map
+
+get /tmpdb/_mapping
+
+
+//Suppresion d'un index
+DELETE /tmpdb
+
+
+//Recherche
+GET /tmpdb/_search?pretty=1
+{
+   "query": {
+      "match": {
+         "name": "Avenue"
+      }
+   }
+}
+POST _search 
+{
+    "query" : {
+        "filtered" : {
+            "filter" : {
+                "term" : {
+                "name": "Avenue des Gobelins"
+                }
+            }
+        }
+    }
+}
+
