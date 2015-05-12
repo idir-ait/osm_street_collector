@@ -357,7 +357,7 @@ function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
 			var newCoordinates = oldWay.value.coordinates;
 			newCoordinates.push(ways[i].value.coordinates)
 
-			newWay.value.coordinates = newCoordinates; //<---
+			newWay.value.coordinates = newCoordinates; 
 			newWay.value.isMultiline = true;
 
 			
@@ -411,7 +411,7 @@ function geojsonMultiline(arrayOfLines)
 var client = new elasticsearch.Client(
 {
   host: 'localhost:9200',
-  log: 'trace',
+  //log: 'trace',
   requestTimeout : 3600000,
   deadTimeout : 3600000,
 
@@ -431,9 +431,8 @@ for(var i =0; i<listeGeoJSON.length; i++)
 }
 
 console.log(listeGeoJSON.length);
-insert(data);  
+//insert(data);  
     
-
 
 var cptInsertion = 0;
 
@@ -460,3 +459,37 @@ function insert(A)
                 }
              	});
 }
+
+//////////////////////////////////////////Traitement des Rue Avec des noms similaire ///////////////////////////////////
+
+
+tabTmp =[];
+
+for (var i = 0; i < listeGeoJSON.length; i++) 
+{
+	listeGeoJSON[i] = 
+
+	var lines = listeGeoJSON[i].geoJson;
+
+	var listeOfMultiLines = []; //Contient les dif multilines des dif rues.
+
+	var multiLine = [];			//Variable tmp qui contiendra les lines d'une rues.
+
+	while(line.length > 0)
+	{
+		 var line = lines.shift();
+
+		 multilines.push(line);
+
+		 var i = 1;
+
+		 while(i >= multiline.length)
+		 {
+
+		 	distance = (lines[i])
+		 }
+			
+
+	}
+
+};
