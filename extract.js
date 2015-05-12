@@ -17,7 +17,7 @@ var hashTableOfWays = new hashes.HashTable();			//Hashtable qui va contenire les
 var hashTableOfRelations = new hashes.HashTable();		//Hashtable qui va contenire les Relations.
 
 
-
+/* A Modifier par une connection a postgreSQL
 //Utilisation du module spatialite Utilisation https://github.com/osmcode/node-osmium/blob/master/demo/spatialite-output/index.js
 
 var sqlite3 = require('spatialite');
@@ -26,6 +26,7 @@ var db = new sqlite3.Database('dbTest.db');
 db.serialize();
 db.spatialite();
 //db.run("PRAGMA synchronous = OFF;"); // otherwise it is very slow
+//*/
 
 var nbrwaysInRelations = 0;
 
@@ -34,7 +35,7 @@ var nbrwaysInRelations = 0;
 handler.on('way', function(way) 
 	{
 
-		//*
+		
 		
 		if( typeOfRoads.indexOf(way.tags('highway')) != -1)
 		{
@@ -83,7 +84,6 @@ handler.on('way', function(way)
 		
 	});
 
-//*/
 
 handler.on('relation', function(relation) 
 {
@@ -105,22 +105,20 @@ handler.on('relation', function(relation)
 		hashTableOfRelations.add(relation.id, tmpWay);
 			
 	}
-
 		
 });
 
 
-
-
-/*
+/* Pas Besion
 handler.on('node', function(node) 
 	{
-
    		console.log(node.wkb());
 		
 	});
 //*/
 
+
+//Scan du fichier PBF.
 osmium.apply(reader, location_handler,handler);
 //osmium.apply(reader, handler);
 
@@ -133,8 +131,7 @@ for (var i = 0; i < tmpArray.length; i++)
 	 if(tmpArray[i].value.length  <= 1)
 	 {
 	 	hashTableOfNodes.remove(tmpArray[i].key)
-	 }
-	 
+	 }	 
 }
 //*/
 
@@ -146,14 +143,11 @@ for (var i = 0; i < tmpArray.length; i++)
 
 	console.log(tmpArray[i].key);
 	console.log(tmpArray[i].value);
- 
 }
 */
 
 //addIntersections (hashTableOfNodes, hashTableOfWays);
 
-
-//console.log(hashTableOfWays.count());
 
 //saveIntersectionPoints(hashTableOfWays);
 
@@ -162,27 +156,26 @@ for (var i = 0; i < tmpArray.length; i++)
 var tmpArray = hashTableOfWays.getKeyValuePairs(); 
 for (var i = 0; i < tmpArray.length; i++) 
 {
-
 	console.log(tmpArray[i].key);
 	console.log(tmpArray[i].value);
- 
 }
-*/
-//console.log(hashTableOfWays.count());
+//*/
 
- //db.close();
 
- getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations);
-console.log("Nombre de ways dans les relations "+nbrwaysInRelations);
-console.log("Nombre de relation "+hashTableOfRelations.count());
-console.log("Nombre de ways "+hashTableOfWays.count());
+var listeGeoJSON = getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations);
+
+//Affichage des GeoJSON
+for (var i = 0; i < listeGeoJSON.length; i++) {
+	console.log(JSON.stringify(listeGeoJSON[i]));
+};
+
 console.log("fin");
 
 
 //Function qui va ajouter les nodes d'intersection a la structure des Ways.
 //Les deux arrgumment nodes et way sont de type HashTable. 
 //ATTETION : Cette fonction est trop gourmande en resource a revoire dé que possible. 
-/*
+
 function addIntersections (hashNodes, ways)
 {
 
@@ -231,9 +224,9 @@ function addIntersections (hashNodes, ways)
 	 	};
 	}; 
 }
-*/
 
-/*
+
+//A modifier par une fonction qui utilise la Base PostgreSQL/PostGis
 function saveIntersectionPoints(hashWays)
 {
 
@@ -271,9 +264,9 @@ function saveIntersectionPoints(hashWays)
 	};	
 
 }
-*/
 
-//Renvoie une liste des 
+
+//Renvoie une liste des GéoJSON des rue qui ont le même nom.
 function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
 {
 
@@ -374,17 +367,18 @@ function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
 	var ways = tabTmp.getKeyValuePairs();
 	for (var i = 0; i < ways.length; i++) 
 	{
-		console.log(ways[i].value);
-		if(ways[i].value.isMultiline != "undefined")
+		//console.log(ways[i].value);
+		//console.log(ways[i].value.isMultiline);
+		if(ways[i].value.isMultiline != undefined)
 		{
-			tabGeoJson.push({name : ways[i].key , geoJson : geojsonMultiline([ways[i].value.coordinates])});
-			//console.log(JSON.stringify(geojsonMultiline([ways[i].value.coordinates])));
+			tabGeoJson.push({name : ways[i].key , geoJson : geojsonMultiline(ways[i].value.coordinates)});
+			//console.log(JSON.stringify(geojsonMultiline(ways[i].value.coordinates)));
 
 		}
 		else
 		{
 			tabGeoJson.push({name : ways[i].key , geoJson : geojsonMultiline(ways[i].value.coordinates)});
-			//console.log({name : ways[i].key , geoJson : geojsonMultiline(ways[i].value.coordinates)});
+			//console.log(JSON.stringify(geojsonMultiline(ways[i].value.coordinates)));
 		}
 
 	}
@@ -394,7 +388,7 @@ function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
 }
 
 
-
+//Reçoit une liste de line et renvoi un geoJSON multiline
 function geojsonMultiline(arrayOfLines)
 {
 
