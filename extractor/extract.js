@@ -431,11 +431,13 @@ for(var i =0; i<listeGeoJSON.length; i++)
 }
 
 console.log(listeGeoJSON.length);
-//insert(data);  
+insert(data);  
     
 
 
 var cptInsertion = 0;
+
+//Fonction d'insertion Elasticsearch.
 function insert(A)
 {
 	
@@ -457,5 +459,4 @@ function insert(A)
                   	}
                 }
              	});
-
 }
