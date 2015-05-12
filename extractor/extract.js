@@ -1,5 +1,6 @@
 
 var osmium = require('osmium');
+var elasticsearch = require('elasticsearch');
 
 //var reader = new osmium.Reader("../data/franche-comte-latest.osm.pbf", { node:true, relation : true, way:true});
 var reader = new osmium.Reader("../data/ile-de-france-latest.osm.pbf", { node:true, relation : false, way:true});
@@ -163,12 +164,14 @@ for (var i = 0; i < tmpArray.length; i++)
 
 var listeGeoJSON = getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations);
 
+/*
 //Affichage des GeoJSON
 for (var i = 0; i < listeGeoJSON.length; i++) {
 
 	//if(listeGeoJSON[i].name == "Avenue de Paris")
 	console.log(JSON.stringify(listeGeoJSON[i]));
 };
+*/
 
 console.log("fin");
 
@@ -396,5 +399,63 @@ function geojsonMultiline(arrayOfLines)
 	var multiLine = JSON.parse('{ "type": "MultiLineString","coordinates": []}');
 	multiLine.coordinates = arrayOfLines;
 	return multiLine;
+
+}
+
+
+//////////////////////////////////////////////Partie Indexation//////////////////////////////////////////////////////////
+
+
+
+//Création d'un client ElasticSearch
+var client = new elasticsearch.Client(
+{
+  host: 'localhost:9200',
+  log: 'trace',
+  requestTimeout : 3600000,
+  deadTimeout : 3600000,
+
+});
+
+
+
+var doc;
+var data = [];
+for(var i =0; i<listeGeoJSON.length; i++)
+{
+	doc = {index: 'tmpdb2',type: 'roads', body : {}};
+	doc.body.name = listeGeoJSON[i].name;
+    doc.body.geo = listeGeoJSON[i];
+    data.push(doc);
+    
+}
+
+console.log(listeGeoJSON.length);
+//insert(data);  
+    
+
+
+var cptInsertion = 0;
+function insert(A)
+{
+	
+ client.index(	A.shift()
+ 				, function (error, response) 
+              	{
+ 
+                	if(error)
+                	{
+                    	console.log(error);
+                	}
+                	else
+                	{
+                  	if(A.length > 0)
+                  	{
+                  		cptInsertion++;
+                  		console.log("Insertion N° "+cptInsertion);
+                    	insert(A);
+                  	}
+                }
+             	});
 
 }
