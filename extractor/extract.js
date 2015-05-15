@@ -118,10 +118,12 @@ handler.on('node', function(node)
 //*/
 
 
+
+console.log("Début de chargement des ways et relations depuis le fichier PBF.");
 //Scan du fichier PBF.
 osmium.apply(reader, location_handler,handler);
 //osmium.apply(reader, handler);
-
+console.log("Fin de chargement des ways et relations.");
 
 
 /*
@@ -163,8 +165,11 @@ for (var i = 0; i < tmpArray.length; i++)
 }
 //*/
 
+console.log("Début du traitement des Relations et des ways.");
 
 var listeGeoJSON = getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations);
+
+console.log("Fin du traitement des Relations et des ways.");
 
 /*
 //Affichage des GeoJSON
@@ -405,7 +410,44 @@ function geojsonMultiline(arrayOfLines)
 }
 
 
-//////////////////////////////////////////////Partie Indexation//////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////Traitement des Rue Avec des noms similaire ///////////////////////////////////
+
+var DS = require('../processing/distinctStreet.js');
+
+console.log("Début traitement des rues avec des nom similaire.");
+
+var nbrOfStreetBefore = listeGeoJSON.length;
+
+listeGeoJSON = DS.arrayOfDistinctStreet(listeGeoJSON);
+
+console.log("Le nombre de rues avant le traitement été de : "+nbrOfStreetBefore);
+console.log("Le nombre de rues après le traitement est de : "+listeGeoJSON.length);
+console.log("Fin traitement des rues avec des nom similaire.");
+
+
+/*//////////////////////////////////////////Partie tests unitaires////////////////////////////////////////////////////////
+
+var TU = require('../lib/TU.js');
+
+
+tmpArray = [];
+for (var i = 0; i < listeGeoJSON.length; i++) {
+
+	tmpArray.push(listeGeoJSON[i].geoJson);
+};
+
+console.log("Il y a "+TU.noSerializeable(tmpArray).length+" geoJSON qui ne sont pas valides.")
+
+
+console.log("Il y a "+TU.indexOfDisjointMultiLine(tmpArray).length+" geoJSON qui sont disjoints.")
+
+//*/
+
+
+
+/*//////////////////////////////////////////////Partie Indexation sur ElasticSearch ////////////////////////////////////////////
 
 
 
@@ -460,56 +502,4 @@ function insert(A)
              	});
 }
 
-
-
-//////////////////////////////////////////Partie tests unitaires////////////////////////////////////////////////////////
-
-var TU = require('../lib/TU.js');
-
-
-tmpArray = [];
-for (var i = 0; i < listeGeoJSON.length; i++) {
-
-	tmpArray.push(listeGeoJSON[i].geoJson);
-};
-
-console.log("Il y a "+TU.noSerializeable(tmpArray).length+" geoJSON qui ne sont pas valides.")
-
-
-console.log("Il y a "+TU.indexOfDisjointMultiLine(tmpArray).length+" geoJSON qui sont disjoints.")
-
-//////////////////////////////////////////Traitement des Rue Avec des noms similaire ///////////////////////////////////
-
-/*
-tabTmp =[];
-
-for (var i = 0; i < listeGeoJSON.length; i++) 
-{
-	listeGeoJSON[i] = 
-
-	var lines = listeGeoJSON[i].geoJson;
-
-	var listeOfMultiLines = []; //Contient les dif multilines des dif rues.
-
-	var multiLine = [];			//Variable tmp qui contiendra les lines d'une rues.
-
-	while(line.length > 0)
-	{
-		 var line = lines.shift();
-
-		 multilines.push(line);
-
-		 var i = 1;
-
-		 while(i >= multiline.length)
-		 {
-
-		 	distance = (lines[i])
-		 }
-			
-
-	}
-
-};
-*/
-
+//*/
