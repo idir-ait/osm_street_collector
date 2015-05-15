@@ -464,7 +464,7 @@ function insert(A)
 
 //////////////////////////////////////////Partie tests unitaires////////////////////////////////////////////////////////
 
-var TU = require('../TU.js');
+var TU = require('../lib/TU.js');
 
 
 tmpArray = [];
@@ -476,6 +476,7 @@ for (var i = 0; i < listeGeoJSON.length; i++) {
 console.log("Il y a "+TU.noSerializeable(tmpArray).length+" geoJSON qui ne sont pas valides.")
 
 
+console.log("Il y a "+TU.indexOfDisjointMultiLine(tmpArray).length+" geoJSON qui sont disjoints.")
 
 //////////////////////////////////////////Traitement des Rue Avec des noms similaire ///////////////////////////////////
 
