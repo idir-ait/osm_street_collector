@@ -85,7 +85,7 @@ handler.on('way', function(way)
 		
 	});
 
-
+//* Traitement des relations
 handler.on('relation', function(relation) 
 {
 		
@@ -107,7 +107,7 @@ handler.on('relation', function(relation)
 			
 	}		
 });
-
+//*/
 
 /* Pas Besion
 handler.on('node', function(node) 
@@ -121,6 +121,8 @@ handler.on('node', function(node)
 //Scan du fichier PBF.
 osmium.apply(reader, location_handler,handler);
 //osmium.apply(reader, handler);
+
+
 
 /*
 //Suppression des node contenant qu'un Way. 
@@ -168,15 +170,15 @@ var listeGeoJSON = getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations);
 //Affichage des GeoJSON
 for (var i = 0; i < listeGeoJSON.length; i++) {
 
-	//if(listeGeoJSON[i].name == "Avenue de Paris")
+	if(listeGeoJSON[i].name == "Avenue de Paris")
 	console.log(JSON.stringify(listeGeoJSON[i]));
 };
-*/
+//*/
 
 console.log("fin");
 
 
-//Function qui va ajouter les nodes d'intersection a la structure des Ways.
+//Function qui va ajouter les nodes d'intersection a la structure des Ways. *
 //Les deux arrgumment nodes et way sont de type HashTable. 
 //ATTETION : Cette fonction est trop gourmande en resource a revoire dé que possible. 
 
@@ -229,8 +231,8 @@ function addIntersections (hashNodes, ways)
 	}; 
 }
 
-
-//A modifier par une fonction qui utilise la Base PostgreSQL/PostGis
+//Sauvgarde les node d'intersection entre les ways.*
+//A modifier par une fonction qui utilise la Base PostgreSQL/PostGis. 
 function saveIntersectionPoints(hashWays)
 {
 
@@ -270,7 +272,7 @@ function saveIntersectionPoints(hashWays)
 }
 
 
-//Renvoie une liste des GéoJSON des rue qui ont le même nom.
+//Renvoie une liste des GéoJSON des rue qui ont le même nom. 
 function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
 {
 
@@ -392,7 +394,7 @@ function getGeoJsonListOfRoads(hashTableOfWays, hashTableOfRelations)
 }
 
 
-//Reçoit une liste de line et renvoi un geoJSON multiline
+//Reçoit une liste de line et renvoi un geoJSON multiline. *
 function geojsonMultiline(arrayOfLines)
 {
 
@@ -414,7 +416,6 @@ var client = new elasticsearch.Client(
   //log: 'trace',
   requestTimeout : 3600000,
   deadTimeout : 3600000,
-
 });
 
 
@@ -426,8 +427,7 @@ for(var i =0; i<listeGeoJSON.length; i++)
 	doc = {index: 'tmpdb2',type: 'roads', body : {}};
 	doc.body.name = listeGeoJSON[i].name;
     doc.body.geo = listeGeoJSON[i];
-    data.push(doc);
-    
+    data.push(doc);   
 }
 
 console.log(listeGeoJSON.length);
@@ -460,9 +460,26 @@ function insert(A)
              	});
 }
 
+
+
+//////////////////////////////////////////Partie tests unitaires////////////////////////////////////////////////////////
+
+var TU = require('../TU.js');
+
+
+tmpArray = [];
+for (var i = 0; i < listeGeoJSON.length; i++) {
+
+	tmpArray.push(listeGeoJSON[i].geoJson);
+};
+
+console.log("Il y a "+TU.noSerializeable(tmpArray).length+" geoJSON qui ne sont pas valides.")
+
+
+
 //////////////////////////////////////////Traitement des Rue Avec des noms similaire ///////////////////////////////////
 
-
+/*
 tabTmp =[];
 
 for (var i = 0; i < listeGeoJSON.length; i++) 
@@ -493,3 +510,5 @@ for (var i = 0; i < listeGeoJSON.length; i++)
 	}
 
 };
+*/
+
