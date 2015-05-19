@@ -39,6 +39,7 @@ GET /tmpdb/_search?pretty=1
       }
    }
 }
+//Rechercher avec un term exact "le champs doit étre sur not_analyzed"
 POST _search 
 {
     "query" : {
@@ -52,3 +53,15 @@ POST _search
     }
 }
 
+
+//Recherche flou "avec des fautes d'orthographes"
+{
+  "query" : {
+      "fuzzy_like_this_field" : {
+        "name" : {
+            "like_text" : "Aveue gaston boisié",
+            "max_query_terms" : 10
+        }
+    }
+  }
+}

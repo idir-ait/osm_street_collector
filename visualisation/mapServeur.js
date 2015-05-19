@@ -2,8 +2,7 @@
 var http = require('http');
 var fs = require('fs'); 
 var elasticsearch = require('elasticsearch');
-
-var geo = require('./myLibGeoJSON.js');
+var io = require('socket.io').listen(server);
 
 
 var server = http.createServer(function(req, res) {
@@ -14,9 +13,8 @@ var server = http.createServer(function(req, res) {
 }); 
 
 
-// Chargement de socket.io
-var io = require('socket.io').listen(server);
-// Quand on client se connecte, on le note dans la console
+
+// Quand un client se connecte, on le note dans la console
 io.sockets.on('connection', function (socket) {
     
 
@@ -41,17 +39,15 @@ io.sockets.on('connection', function (socket) {
             type: 'roads',
             size : 1000000,
             body: {
-					query : {
-					    filtered : {
-					        filter : {
-					            term : {
-					            name: message
-					             }
-					            }
-					        }
-					    }
-					}
-
+                    query : {
+                    fuzzy_like_this_field : {
+                    name : {
+                    like_text : message,
+                    max_query_terms : 10
+                          }
+                        }
+                      }
+                  }
             }, function (error, response) 
             {
             	if(message !='undefined')
@@ -61,18 +57,12 @@ io.sockets.on('connection', function (socket) {
               
                 	for (i = 0; i < response.hits.hits.length; i++) 
                 	{
-                  		arrayOfLine.push(response.hits.hits[i]._source);
+                  		arrayOfLine.push(response.hits.hits[i]._source.geo);
                   		
                 	}
 
-
-                	var multiLine = line2multiline (arrayOfLine);
-
-                	//console.log(JSON.stringify(multiLine));
-
-                	//multiLine = geo.mergeSegments(multiLine);
-                	
-                	socket.emit('message', multiLine);
+                  console.log(arrayOfLine);
+                	socket.emit('message', arrayOfLine);
               	}
               		
          });
@@ -81,17 +71,3 @@ io.sockets.on('connection', function (socket) {
 }); 
 server.listen(8080); 
 
-
-function line2multiline (arrayOfLine)
-{
-  var multiLine = JSON.parse('{ "type": "MultiLineString","coordinates": []}');
-
-  for (i = 0; i < arrayOfLine.length; i++) 
-  {
-
-    multiLine.coordinates.push(arrayOfLine[i].location.coordinates);
-
-  }
-
-  return multiLine; 
-}

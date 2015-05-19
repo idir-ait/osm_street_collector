@@ -1,6 +1,7 @@
 
 var osmium = require('osmium');
 var elasticsearch = require('elasticsearch');
+fs = require('fs');
 
 //var reader = new osmium.Reader("../data/franche-comte-latest.osm.pbf", { node:true, relation : true, way:true});
 var reader = new osmium.Reader("../data/ile-de-france-latest.osm.pbf", { node:true, relation : false, way:true});
@@ -416,7 +417,7 @@ function geojsonMultiline(arrayOfLines)
 
 var DS = require('../processing/distinctStreet.js');
 
-console.log("Début traitement des rues avec des nom similaire.");
+console.log("Début traitement des rues avec des noms similaires.");
 
 var nbrOfStreetBefore = listeGeoJSON.length;
 
@@ -427,6 +428,26 @@ console.log("Le nombre de rues après le traitement est de : "+listeGeoJSON.leng
 console.log("Fin traitement des rues avec des nom similaire.");
 
 
+
+
+//*//////////////////////////////////////////partie enregister le resultat sur un fichier .TXT////////////////////////////
+
+
+console.log("Début enregistrement des resultat sous le fichier .json");
+
+for (var i = 0; i < listeGeoJSON.length; i++) 
+{
+
+	fs.appendFileSync('street.json', JSON.stringify(listeGeoJSON[i])+"\n");
+	
+};
+
+console.log("Fin enregistrement");
+
+
+
+
+/*/
 /*//////////////////////////////////////////Partie tests unitaires////////////////////////////////////////////////////////
 
 var TU = require('../lib/TU.js');
@@ -447,8 +468,12 @@ console.log("Il y a "+TU.indexOfDisjointMultiLine(tmpArray).length+" geoJSON qui
 
 
 
-/*//////////////////////////////////////////////Partie Indexation sur ElasticSearch ////////////////////////////////////////////
+//*//////////////////////////////////////////////Partie Indexation sur ElasticSearch ////////////////////////////////////////////
 
+
+
+console.log("Début de l'insertion sur ElasticSearch.");
+var nbrErrInsert = 0;  
 
 
 //Création d'un client ElasticSearch
@@ -468,11 +493,11 @@ for(var i =0; i<listeGeoJSON.length; i++)
 {
 	doc = {index: 'tmpdb2',type: 'roads', body : {}};
 	doc.body.name = listeGeoJSON[i].name;
-    doc.body.geo = listeGeoJSON[i];
+    doc.body.geo = listeGeoJSON[i].geoJson;
     data.push(doc);   
 }
 
-console.log(listeGeoJSON.length);
+
 //insert(data);  
     
 
@@ -489,6 +514,8 @@ function insert(A)
                 	if(error)
                 	{
                     	console.log(error);
+                    	nbrErrInsert ++;
+                    	
                 	}
                 	else
                 	{
@@ -498,6 +525,12 @@ function insert(A)
                   		console.log("Insertion N° "+cptInsertion);
                     	insert(A);
                   	}
+                  	if(A.length === 0)
+                  	{
+                  		console.log("Le nombre d'erreur d'insertion est de : "+ nbrErrInsert);
+                  		console.log("Fin de l\'insertion sur ElasticSearch");
+                  	}
+
                 }
              	});
 }
